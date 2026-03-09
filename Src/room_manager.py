@@ -88,8 +88,8 @@ class RoomManager:
 
         names = [r[0] for r in rooms]
 
-        PER_PAGE = 3      #  3 rooms par message
-        MAX_ROOMS = 30    # sécurité (évite spam)
+        PER_PAGE = 3  # 3 rooms par message
+        MAX_ROOMS = 30  # sécurité (évite spam)
 
         truncated = False
         if len(names) > MAX_ROOMS:
@@ -103,16 +103,16 @@ class RoomManager:
         responses.append(OutgoingMessage(sender, f"Rooms ({total_rooms} total):"))
 
         for page in range(total_pages):
-            chunk = names[page * PER_PAGE : (page + 1) * PER_PAGE]
+            chunk = names[page * PER_PAGE: (page + 1) * PER_PAGE]
             line = ", ".join(chunk)
-            responses.append(OutgoingMessage(sender, f"[{page+1}/{total_pages}] {line}"))
+            responses.append(OutgoingMessage(sender, f"[{page + 1}/{total_pages}] {line}"))
 
         if truncated:
             responses.append(OutgoingMessage(sender, f"... (+{total_rooms - MAX_ROOMS} more)"))
 
         return responses
 
-    #previous version of _handle_post, which was based on splitting tokens, but it had issues with messages that contained multiple words (e.g., "/room post TestRoom Hello everyone, how are you?"), because it would split the message into multiple tokens and we would lose the original message structure. The new version _handle_post_from_raw takes the raw text of the command and splits it into a maximum of 4 parts: the command itself, the action, the room name, and the rest of the message as a single string, which allows us to preserve the full message content even if it contains spaces.
+    # previous version of _handle_post, which was based on splitting tokens, but it had issues with messages that contained multiple words (e.g., "/room post TestRoom Hello everyone, how are you?"), because it would split the message into multiple tokens and we would lose the original message structure. The new version _handle_post_from_raw takes the raw text of the command and splits it into a maximum of 4 parts: the command itself, the action, the room name, and the rest of the message as a single string, which allows us to preserve the full message content even if it contains spaces.
     """
     def _handle_post(self, sender: int, ts: float, tokens: List[str]) -> List[OutgoingMessage]:
         if len(tokens) < 4: #  We need at least 4 tokens: /room post <name> <msg>, and the message can contain multiple words
@@ -135,14 +135,16 @@ class RoomManager:
         name = parts[2]
         content = parts[3]
 
-        if not self.storage.room_exists(name): # We should check if the room exists before trying to post a message to it, and return an error if it doesn't exist
+        if not self.storage.room_exists(
+                name):  # We should check if the room exists before trying to post a message to it, and return an error if it doesn't exist
             return [OutgoingMessage(sender, f"ERR room '{name}' not found")]
 
-        self.storage.add_message(name, sender, int(ts), content) # The add_message method should save the message in the database, associating it with the specified room, sender, and timestamp. We convert the timestamp to an integer (Unix time) for consistency with how we store timestamps in the database.
+        self.storage.add_message(name, sender, int(ts),
+                                 content)  # The add_message method should save the message in the database, associating it with the specified room, sender, and timestamp. We convert the timestamp to an integer (Unix time) for consistency with how we store timestamps in the database.
         return [OutgoingMessage(sender, f"OK posted to '{name}'")]
 
     def _handle_read(self, sender: int, tokens: List[str]) -> List[OutgoingMessage]:
-        if len(tokens) < 3: # We need at least 3 tokens: /room read <name>, and optionally a 4th token for the number of messages to read
+        if len(tokens) < 3:  # We need at least 3 tokens: /room read <name>, and optionally a 4th token for the number of messages to read
             return [OutgoingMessage(sender, "ERR usage: /room read <name> [n]")]
 
         name = tokens[2]
@@ -151,14 +153,15 @@ class RoomManager:
         if len(tokens) >= 4:
             try:
                 n = int(tokens[3])
-                if n < 1: # We should validate that n is a positive integer, and return an error if it's not (e.g., if it's negative, zero, or not a number at all)
+                if n < 1:  # We should validate that n is a positive integer, and return an error if it's not (e.g., if it's negative, zero, or not a number at all)
                     return [OutgoingMessage(sender, "ERR n must be positive integer")]
                 if n > 10:
                     return [OutgoingMessage(sender, "ERR n must be at most 10")]
             except ValueError:
                 return [OutgoingMessage(sender, "ERR n must be integer (1..10)")]
 
-        if not self.storage.room_exists(name): # We should check if the room exists before trying to read messages from it, and return an error if it doesn't exist
+        if not self.storage.room_exists(
+                name):  # We should check if the room exists before trying to read messages from it, and return an error if it doesn't exist
             return [OutgoingMessage(sender, f"ERR room '{name}' not found")]
 
         # The read_last_messages method should return a list of tuples, where each tuple contains the sender_id, received_at timestamp, and content of a message.
@@ -167,9 +170,9 @@ class RoomManager:
         rows = self.storage.read_last_messages(name, n)
         responses = []
 
-        if not rows: # If there are no messages in the room, we should return a response indicating that the room is empty (instead of just showing the header with no messages)
+        if not rows:  # If there are no messages in the room, we should return a response indicating that the room is empty (instead of just showing the header with no messages)
             return [OutgoingMessage(sender, f"'{name}': (no messages)")]
-        if len(rows) < n: # If there are fewer messages than n, we should indicate that in the header (e.g., by showing the actual number of messages being displayed instead of n),
+        if len(rows) < n:  # If there are fewer messages than n, we should indicate that in the header (e.g., by showing the actual number of messages being displayed instead of n),
             # to avoid confusion for the user who might expect to see n messages but only sees a few
             responses.append(OutgoingMessage(sender, f"'{name}': (only {len(rows)} messages)"))
 
@@ -186,7 +189,7 @@ class RoomManager:
 
             chunks = textwrap.wrap(content, width=32)
 
-            for chunk in chunks: # We split the content into chunks of 32 characters (or less) to fit within the typical message length limits of LoRa, and we send each chunk as a separate message with a "->" prefix to indicate that it's part of the same original message.
+            for chunk in chunks:  # We split the content into chunks of 32 characters (or less) to fit within the typical message length limits of LoRa, and we send each chunk as a separate message with a "->" prefix to indicate that it's part of the same original message.
                 responses.append(OutgoingMessage(sender, f"-> {chunk}"))
 
         return responses
