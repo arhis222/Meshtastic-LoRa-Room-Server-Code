@@ -66,7 +66,31 @@ We selected **SQLite** as our storage engine.
 
 ---
 
-## 4. Limitations
+## 4. Optimisation du Réseau : Réponses en Messages Privés (Direct Messages)
+
+Lors de l'utilisation du serveur, vous remarquerez que si vous envoyez une commande (ex: `/room list` ou `/room read`) dans le canal public du projet (ex: `projet_s8`), le serveur ne répond pas dans ce même canal public, mais ouvre une **conversation privée** avec votre téléphone.
+
+### Pourquoi ce choix technique ?
+
+1. **Économie de la bande passante (Duty Cycle) :** Le réseau LoRa est extrêmement contraint. Si le serveur diffusait (Broadcast) la liste de tous les salons ou l'historique des messages dans le canal public, cela monopoliserait l'antenne et spammerait l'écran de tous les utilisateurs du réseau.
+2. **Expérience Utilisateur (UX) :** Chaque téléphone (nœud client) reçoit ses propres requêtes de manière isolée et privée, rendant la lecture beaucoup plus claire. Le canal public reste ainsi propre et réservé aux communications globales.
+
+### Configuration de l'identité du Serveur
+
+Par défaut, le module Wio-E5 branché au Raspberry Pi s'identifie sur le réseau avec un nom générique lié à son adresse MAC (par exemple : `Meshtastic 1446`).
+
+Pour rendre l'interface plus intuitive pour les utilisateurs finaux, nous avons renommé le nœud serveur pour qu'il apparaisse clairement comme le **"Room Server"** lors de l'envoi des messages privés.
+
+Cette configuration a été appliquée via la commande Meshtastic CLI suivante sur le Raspberry Pi :
+
+```bash
+meshtastic --set-owner "Room Server" --set-owner-short "SRV"
+```
+
+``
+Désormais, toutes les réponses aux requêtes utilisateur proviennent directement d'une conversation privée nommée Room Server, garantissant une interaction fluide et professionnelle.
+
+## 5. Limitations
 
 * **Bandwidth:** Due to LoRa duty cycles, the `read` command is limited to returning 3-5 messages at a time.
 * **Latency:** Response time may vary between 2-10 seconds depending on network congestion.
