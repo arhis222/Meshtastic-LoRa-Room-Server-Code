@@ -39,7 +39,7 @@ class RoomManager:
         # --- Action Dispatch ---
 
         if action in ("help", "?"):
-            return [OutgoingMessage(sender, self._help_text())]
+            return self._help_text(OutgoingMessage, sender)
 
         # if action == "hello": # Special command to acknowledge new clients (not stored in DB)
         #    log.info(f"🟢 NEW CLIENT CONNECTED: ID {sender}")
@@ -197,14 +197,15 @@ class RoomManager:
 
         return responses
 
-    def _help_text(self) -> str:
-        # the help text provides a summary of the available commands and their usage. It is returned as a single string, which can be sent as a response to the user when they request help or when they enter an invalid command.
-        return (
-            "Cmds:\n"
-            "/room create <name>\n"
-            "/room post <name> <msg>\n"
-            "/room read <name>\n"
-            "/room list\n"
-            "/room delete <name>\n"
-            "/room help\n"
+    def _help_text(self, OutgoingMessage, sender: int) -> List[OutgoingMessage]:
+        help_msg = (
+            "Available commands:\n"
+            "/room create <name> [desc]  - Create a room with optional description\n"
+            "/room delete <name>         - Delete a room\n"
+            "/room list                  - List all rooms\n"
+            "/room post <name> <msg>     - Post a message to a room\n"
+            "/room read <name> [n]       - Read the last n messages from a room (default n=5, max n=10)\n"
+            "/room help or /room ?       - Show this help message"
         )
+        return [OutgoingMessage(sender, help_msg)]
+
