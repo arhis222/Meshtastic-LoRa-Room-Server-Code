@@ -107,7 +107,7 @@ echo "Setup complete! The Room Server is now running in the background."
 echo ""
 ```
 
-### 3. Cheat Ssheet: How to read logs (Run these commands yourself later)
+### 3. Cheat Sheet: How to read logs (Run these commands yourself later)
 
 First connect to raspberrypi with this command and enter 'raspberry' for the password
 
@@ -169,16 +169,57 @@ python3 client.py
 
 ---
 
-## Client Commands (Via LoRa)
+## Commandes Disponibles
 
-Send these commands from your Meshtastic mobile app (or client interface) directly to the **Room Server** node (via Direct Message / DM) to interact with the database:
+Pour interagir avec le serveur, envoyez ces commandes par **Message Direct (DM)** au nœud "Room Server" depuis votre application mobile Meshtastic :
 
-* `/room create  <name> [description]` - Create a new chat room (description is optional).
-* `/room post <name> <message>` - Publish a message to a specific room.
-* `/room read <name> [n]` - Read the last `n` messages from a room (default is 5, max is 10 messages).
-* `/room list` - View a paginated list of all available chat rooms on the server.
-* `/room delete <name>` - Delete a specific chat room from the database.
-* `/room help` (or `/room ?`) - Display the list of available commands.
+### 🏠 Gestion des Salons (Rooms)
+
+* **/room create <nom> [description]** : Crée un nouveau salon (la description est optionnelle).
+* **/room list** : Affiche la liste paginée de tous les salons disponibles sur le serveur.
+* **/room info <nom>** : Affiche les métadonnées d'un salon (Description, Date de création, Nombre total de messages, Dernière activité).
+* **/room delete <nom>** : Supprime un salon spécifique de la base de données SQLite.
+
+### 💬 Messagerie et Lecture
+
+* **/room post <nom> <message>** : Publie un message dans un salon spécifique.
+* **/room read <nom> [n]** : Lit les `n` derniers messages d'un salon (par défaut n=5, max n=10).
+
+### 📢 Interactions Globales
+
+* **/room announce <message>** : Diffuse (**Broadcast**) un message à **TOUS** les utilisateurs du canal `S8_Project`.
+* **/room help** (ou **/room ?**) : Affiche la liste des commandes et l'aide à l'utilisation.
+
+---
+
+## Optimisations et Robustesse (Architecture)
+
+Pour garantir la fiabilité du système face aux contraintes du réseau LoRa, nous avons implémenté plusieurs mécanismes avancés :
+
+### 1. Protection Anti-Spam (Rate Limiting)
+
+Pour respecter la réglementation sur le temps d'occupation des fréquences (**Duty Cycle**) et protéger la bande passante, un délai de **10 secondes** est imposé entre chaque commande par utilisateur. Si un utilisateur envoie des requêtes trop rapidement, le serveur ignore la commande et demande de patienter.
+
+### 2. Gestion des Files d'Attente (FIFO Queue)
+
+Le matériel LoRa étant **Half-Duplex** (ne peut pas émettre et recevoir simultanément), nous avons implémenté une file d'attente **FIFO** (First-In-First-Out) pour les messages sortants. Cela garantit que les réponses ne s'entrecroisent pas et que chaque paquet est envoyé après un délai de repos du matériel.
+
+### 3. Découpage des Messages (Chunking)
+
+En raison de la limite de charge utile (payload) de ~200 octets du protocole Meshtastic, le serveur découpe automatiquement les réponses longues en blocs de **32 caractères**. Chaque bloc est envoyé avec un délai de 4 secondes pour assurer une réception sans perte.
+
+### 4. Architecture Stateless
+
+Le serveur est conçu pour être "sans état" : il n'est pas nécessaire de rejoindre (`join`) ou de quitter (`leave`) un salon. L'utilisateur interagit directement via les commandes `post` et `read`, ce qui réduit considérablement le trafic réseau inutile.
+
+---
+
+## Sécurité
+
+Le canal `S8_Project` est protégé par un chiffrement **AES-128/256**. La présence du **cadenas vert** sur l'interface client garantit que seules les personnes possédant la clé PSK (Pre-Shared Key) peuvent lire ou envoyer des messages sur le réseau.
+EOF
+
+echo "✅ README.md a été créé avec succès !"
 
 > **💡 Note on Architecture:** > Unlike traditional chat servers, this LoRa Room Server is *stateless*. There are no `/room join` or `/room leave` commands. You do not need to "enter" a room to participate; you simply target the room name using the `post` and `read` commands. This drastically reduces unnecessary network traffic and saves valuable LoRa airtime!</name></name></message></name></name>
 
