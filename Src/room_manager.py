@@ -15,6 +15,8 @@ class RoomManager:
     # Constructor takes a StorageSQLite instance as argument, which will be used to perform all database operations related to rooms and messages
     def __init__(self, storage: StorageSQLite):
         self.storage = storage
+        self.user_cooldowns = {}  # Keeps track of the last message timestamp for each user to enforce cooldowns and prevent spamming
+        self.COOLDOWN_SECONDS = 10  # Minimum number of seconds between messages from the same user
 
     def handle_message(self, msg: IncomingMessage) -> List[OutgoingMessage]:
         """Processes an incoming message and returns a list of responses."""
@@ -24,6 +26,22 @@ class RoomManager:
         # Check if it is a /room command
         if not CommandParser.is_room_command(text):
             return []  # if not, we send no response (empty list) and ignore the message
+
+        # --- ANTI-SPAM COOLDOWN CHECK ---
+        current_time = time.time()
+        last_time = self.user_cooldowns.get(sender, 0) # If the sender is not in the cooldown dictionary, we assume their last message was at time 0 (the epoch),
+        # which means they are not currently on cooldown and can send a message.
+
+        if current_time - last_time < self.COOLDOWN_SECONDS:
+            remaining = int(self.COOLDOWN_SECONDS - (current_time - last_time))
+            log.warning(f"🛑 RATE LIMIT: {sender} is sending too fast. Dropping message.")
+            # If the user is sending messages too quickly (i.e., within the cooldown period), we return an error message indicating that
+            # they are being rate limited and how many seconds they need to wait before sending another message.
+            # This helps prevent spam and abuse of the system, while also providing feedback to the user about why their message was not processed.
+            return [OutgoingMessage(sender, f"ERR Spam protection! Wait {remaining}s.")]
+
+        # If the user is not on cooldown, we update their last message timestamp to the current time, so that we can enforce the cooldown for their next message.
+        self.user_cooldowns[sender] = current_time
 
         # Split the command into tokens (words) to analyze the action and its arguments
         tokens = CommandParser.parse_tokens(text)
@@ -61,6 +79,9 @@ class RoomManager:
 
         if action == "info":
             return self._handle_info(sender, tokens)
+
+        if action == "announce":
+            return self._handle_announce(sender, text)
 
         return [OutgoingMessage(sender, f"ERR unknown action    (try /room help)")]
 
@@ -245,3 +266,27 @@ class RoomManager:
             OutgoingMessage(sender, f"-> Total Msgs: {msg_count}"),
             OutgoingMessage(sender, f"-> Last Active: {active_str}")
         ]
+
+    def _handle_announce(self, sender: int, raw_text: str) -> List[OutgoingMessage]:
+        """Sends a broadcast message to ALL nodes in the network."""
+        parts = raw_text.strip().split(maxsplit=2) # We split the raw text into a maximum of 3 parts: the command itself, the action, and the rest of the message
+        # as a single string, which allows us to preserve the full announcement content even if it contains spaces.
+
+        if len(parts) < 3:
+            return [OutgoingMessage(sender, "ERR usage: /room announce <msg>")]
+
+        announcement = parts[2]
+        broadcast_msg = f"📢 ANNOUNCEMENT from #{sender}:\n{announcement}"
+
+        responses = []
+
+        # First we send the sender a confirmation message that their announcement is being broadcasted
+        responses.append(OutgoingMessage(sender, "OK Broadcast sent!"))
+
+        # Then we send the actual announcement as a broadcast message (target_id = None) to all nodes in the network.
+        # We're using chunks like always
+        chunks = textwrap.wrap(broadcast_msg, width=30)
+        for chunk in chunks:
+            responses.append(OutgoingMessage(None, chunk))
+
+        return responses
