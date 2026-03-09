@@ -32,8 +32,7 @@ class RoomManager:
         if len(tokens) < 2:
             return [OutgoingMessage(sender, "ERR usage: /room help")]
 
-        action = tokens[
-            1].lower()  # The action is the second token (e.g., 'create', 'post', etc.) and we convert it to lowercase for case-insensitive matching
+        action = tokens[1].lower()  # The action is the second token (e.g., 'create', 'post', etc.) and we convert it to lowercase for case-insensitive matching
         log.info(f"Action received from {sender}: {action}")
 
         # --- Action Dispatch ---
@@ -98,8 +97,7 @@ class RoomManager:
             truncated = True
 
         total_rooms = len(rooms)  # we calculate the total number of rooms
-        total_pages = (
-                                  len(names) + PER_PAGE - 1) // PER_PAGE  # we calculate the total number of pages needed to display all the rooms, based on the number of rooms we have (after truncation if needed) and the number of rooms we want to show per page.
+        total_pages = (len(names) + PER_PAGE - 1) // PER_PAGE  # we calculate the total number of pages needed to display all the rooms, based on the number of rooms we have (after truncation if needed) and the number of rooms we want to show per page.
 
         responses: List[OutgoingMessage] = []
         responses.append(OutgoingMessage(sender, f"Rooms ({total_rooms} total):"))
@@ -216,4 +214,3 @@ class RoomManager:
             responses.append(OutgoingMessage(sender, line))
 
         return responses
-
