@@ -233,7 +233,7 @@ class RoomManager:
         desc, created_at, msg_count, last_active = info
 
         # Format the creation date and last active date into human-readable strings, and handle cases where the description is empty or the room has never been active (i.e., no messages posted yet, so last_active is None)
-        created_str = time.strftime("%Y-%m-%d", time.localtime(created_at))
+        created_str = time.strftime("%Y-%m-%d %H:%M", time.localtime(created_at))
         active_str = time.strftime("%Y-%m-%d %H:%M", time.localtime(last_active)) if last_active else "Never"
         desc_str = desc if desc else "No description"
 

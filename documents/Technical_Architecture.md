@@ -87,9 +87,6 @@ Cette configuration a été appliquée via la commande Meshtastic CLI suivante s
 meshtastic --set-owner "Room Server" --set-owner-short "SRV"
 ```
 
-``
-Désormais, toutes les réponses aux requêtes utilisateur proviennent directement d'une conversation privée nommée Room Server, garantissant une interaction fluide et professionnelle.
-
 ## 5. Limitations et Optimisations (Contraintes LoRa)
 
 * **Bande Passante (Bandwidth) :** En raison des règles strictes de temps d'antenne (*Duty Cycle* LoRa) et du faible débit, la commande `read` est volontairement limitée pour ne retourner que 1 à 10 messages à la fois afin d'éviter de saturer le réseau.
