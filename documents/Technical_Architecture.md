@@ -90,7 +90,10 @@ meshtastic --set-owner "Room Server" --set-owner-short "SRV"
 ``
 Désormais, toutes les réponses aux requêtes utilisateur proviennent directement d'une conversation privée nommée Room Server, garantissant une interaction fluide et professionnelle.
 
-## 5. Limitations
+## 5. Limitations et Optimisations (Contraintes LoRa)
 
-* **Bandwidth:** Due to LoRa duty cycles, the `read` command is limited to returning 3-5 messages at a time.
-* **Latency:** Response time may vary between 2-10 seconds depending on network congestion.
+* **Bande Passante (Bandwidth) :** En raison des règles strictes de temps d'antenne (*Duty Cycle* LoRa) et du faible débit, la commande `read` est volontairement limitée pour ne retourner que 1 à 10 messages à la fois afin d'éviter de saturer le réseau.
+* **Latence (Latency) :** Le temps de réponse asynchrone peut varier entre 2 et 30 secondes en fonction de la congestion du réseau et des sauts radio (hops) nécessaires.
+* **Taille des Messages (Chunking à 32 caractères) :** Bien que la charge utile (payload) maximale théorique d'un paquet Meshtastic soit d'environ 200 octets, nous avons conçu le serveur pour découper systématiquement les messages longs en blocs de **32 caractères maximum**. Ce choix technique répond à deux enjeux majeurs :
+  1. *Réduction du "Time-on-Air" et des pertes :* Des paquets très courts minimisent le temps d'émission radio. Cela réduit drastiquement le risque de collisions en vol et de pertes de paquets (Packet Loss), rendant notre système beaucoup plus robuste.
+  2. *Expérience Utilisateur (UX) optimisée :* La limite de 32 caractères correspond à la largeur de lecture idéale pour les petits écrans matériels (ex: écrans OLED des modules Heltec) et les terminaux mobiles, garantissant un affichage propre sans coupure arbitraire des mots au milieu d'une phrase.
