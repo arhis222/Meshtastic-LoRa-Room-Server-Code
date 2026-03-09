@@ -198,14 +198,22 @@ class RoomManager:
         return responses
 
     def _help_text(self, OutgoingMessage, sender: int) -> List[OutgoingMessage]:
-        help_msg = (
-            "Available commands:\n"
-            "/room create <name> [desc]  - Create a room with optional description\n"
-            "/room delete <name>         - Delete a room\n"
-            "/room list                  - List all rooms\n"
-            "/room post <name> <msg>     - Post a message to a room\n"
-            "/room read <name> [n]       - Read the last n messages from a room (default n=5, max n=10)\n"
-            "/room help or /room ?       - Show this help message"
-        )
-        return [OutgoingMessage(sender, help_msg)]
+        """Returns the help menu as a list of smaller messages to respect LoRa payload limits."""
+        # Split the help menu into individual lines to avoid the "Data payload too big" error
+        help_lines = [
+            "Available commands:",
+            "/room create <name> [desc]",
+            "/room delete <name>",
+            "/room list",
+            "/room post <name> <msg>",
+            "/room read <name> [n]",
+            "/room help or /room ?"
+        ]
+
+        # Create a separate OutgoingMessage for each line
+        responses = []
+        for line in help_lines:
+            responses.append(OutgoingMessage(sender, line))
+
+        return responses
 
