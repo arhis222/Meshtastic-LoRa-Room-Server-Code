@@ -93,6 +93,7 @@ class TransportHardware:
                     # sender to receive the response before we send another one (especially important if there are
                     # multiple responses to the same message, like in /room list)
                     def send_responses_task():
+                        time.sleep(1) # Wait a bit before sending the first response to give the sender some time to receive the original message and to avoid sending responses too quickly in case of multiple responses (e.g., /room list)
                         for resp in responses:
                             self.send(resp)
                             time.sleep(4)

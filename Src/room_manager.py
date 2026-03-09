@@ -32,8 +32,7 @@ class RoomManager:
         if len(tokens) < 2:
             return [OutgoingMessage(sender, "ERR usage: /room help")]
 
-        action = tokens[
-            1].lower()  # The action is the second token (e.g., 'create', 'post', etc.) and we convert it to lowercase for case-insensitive matching
+        action = tokens[1].lower()  # The action is the second token (e.g., 'create', 'post', etc.) and we convert it to lowercase for case-insensitive matching
         log.info(f"Action received from {sender}: {action}")
 
         # --- Action Dispatch ---
@@ -60,7 +59,10 @@ class RoomManager:
         if action == "read":
             return self._handle_read(sender, tokens)
 
-        return [OutgoingMessage(sender, f"ERR unknown action '{action}' (try /room help)")]
+        if action == "info":
+            return self._handle_info(sender, tokens)
+
+        return [OutgoingMessage(sender, f"ERR unknown action    (try /room help)")]
 
     # --- Private Management Methods ---
 
@@ -98,8 +100,7 @@ class RoomManager:
             truncated = True
 
         total_rooms = len(rooms)  # we calculate the total number of rooms
-        total_pages = (
-                                  len(names) + PER_PAGE - 1) // PER_PAGE  # we calculate the total number of pages needed to display all the rooms, based on the number of rooms we have (after truncation if needed) and the number of rooms we want to show per page.
+        total_pages = (len(names) + PER_PAGE - 1) // PER_PAGE  # we calculate the total number of pages needed to display all the rooms, based on the number of rooms we have (after truncation if needed) and the number of rooms we want to show per page.
 
         responses: List[OutgoingMessage] = []
         responses.append(OutgoingMessage(sender, f"Rooms ({total_rooms} total):"))
@@ -198,14 +199,49 @@ class RoomManager:
         return responses
 
     def _help_text(self, OutgoingMessage, sender: int) -> List[OutgoingMessage]:
-        help_msg = (
-            "Available commands:\n"
-            "/room create <name> [desc]  - Create a room with optional description\n"
-            "/room delete <name>         - Delete a room\n"
-            "/room list                  - List all rooms\n"
-            "/room post <name> <msg>     - Post a message to a room\n"
-            "/room read <name> [n]       - Read the last n messages from a room (default n=5, max n=10)\n"
-            "/room help or /room ?       - Show this help message"
-        )
-        return [OutgoingMessage(sender, help_msg)]
+        """Returns the help menu as a list of smaller messages to respect LoRa payload limits."""
+        # Split the help menu into individual lines to avoid the "Data payload too big" error
+        help_lines = [
+            "Available commands:",
+            "/room create <name> [desc]",
+            "/room delete <name>",
+            "/room list",
+            "/room post <name> <msg>",
+            "/room read <name> [n]",
+            "/room info <name>",
+            "/room help or /room ?"
+        ]
 
+        # Create a separate OutgoingMessage for each line
+        responses = []
+        for line in help_lines:
+            responses.append(OutgoingMessage(sender, line))
+
+        return responses
+
+    def _handle_info(self, sender: int, tokens: List[str]) -> List[OutgoingMessage]:
+        """Provides information about a specific room, such as its description, creation date, total number of messages, and last active date."""
+        if len(tokens) < 3:
+            return [OutgoingMessage(sender, "ERR usage: /room info <name>")]
+
+        name = tokens[2]
+        info = self.storage.get_room_info(name)
+
+        if not info:
+            return [OutgoingMessage(sender, f"ERR room '{name}' not found")]
+
+        desc, created_at, msg_count, last_active = info
+
+        # Format the creation date and last active date into human-readable strings, and handle cases where the description is empty or the room has never been active (i.e., no messages posted yet, so last_active is None)
+        created_str = time.strftime("%Y-%m-%d", time.localtime(created_at))
+        active_str = time.strftime("%Y-%m-%d %H:%M", time.localtime(last_active)) if last_active else "Never"
+        desc_str = desc if desc else "No description"
+
+        # Format for the LoRa response, splitting into multiple messages if needed to avoid payload limits, and including the room name, description (truncated if too long), creation date, total number of messages, and last active date.
+        return [
+            OutgoingMessage(sender, f"--- Info: '{name}' ---"),
+            OutgoingMessage(sender, f"-> Desc: {desc_str[:30]}"),  #if its too long we cut it
+            OutgoingMessage(sender, f"-> Created: {created_str}"),
+            OutgoingMessage(sender, f"-> Total Msgs: {msg_count}"),
+            OutgoingMessage(sender, f"-> Last Active: {active_str}")
+        ]
