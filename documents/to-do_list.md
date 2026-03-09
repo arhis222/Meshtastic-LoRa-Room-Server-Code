@@ -1,4 +1,4 @@
-🛠️ Meshtastic Room Server - Implementation Guide
+ Meshtastic Room Server - Implementation Guide
 Project: Room Server (INFO4 S8) Hardware: Raspberry Pi 3B + Seeed Studio Wio-E5 Mini (LoRa) Language: Python 3.x Persistence: SQLite3 Architecture: Modular (MVC-like)
 
 📋 Table of Contents
