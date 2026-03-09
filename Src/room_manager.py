@@ -59,6 +59,9 @@ class RoomManager:
         if action == "read":
             return self._handle_read(sender, tokens)
 
+        if action == "info":
+            return self._handle_info(sender, tokens)
+
         return [OutgoingMessage(sender, f"ERR unknown action    (try /room help)")]
 
     # --- Private Management Methods ---
@@ -205,6 +208,7 @@ class RoomManager:
             "/room list",
             "/room post <name> <msg>",
             "/room read <name> [n]",
+            "/room info <name>",
             "/room help or /room ?"
         ]
 
@@ -214,3 +218,30 @@ class RoomManager:
             responses.append(OutgoingMessage(sender, line))
 
         return responses
+
+    def _handle_info(self, sender: int, tokens: List[str]) -> List[OutgoingMessage]:
+        """Provides information about a specific room, such as its description, creation date, total number of messages, and last active date."""
+        if len(tokens) < 3:
+            return [OutgoingMessage(sender, "ERR usage: /room info <name>")]
+
+        name = tokens[2]
+        info = self.storage.get_room_info(name)
+
+        if not info:
+            return [OutgoingMessage(sender, f"ERR room '{name}' not found")]
+
+        desc, created_at, msg_count, last_active = info
+
+        # Format the creation date and last active date into human-readable strings, and handle cases where the description is empty or the room has never been active (i.e., no messages posted yet, so last_active is None)
+        created_str = time.strftime("%Y-%m-%d", time.localtime(created_at))
+        active_str = time.strftime("%Y-%m-%d %H:%M", time.localtime(last_active)) if last_active else "Never"
+        desc_str = desc if desc else "No description"
+
+        # Format for the LoRa response, splitting into multiple messages if needed to avoid payload limits, and including the room name, description (truncated if too long), creation date, total number of messages, and last active date.
+        return [
+            OutgoingMessage(sender, f"--- Info: '{name}' ---"),
+            OutgoingMessage(sender, f"-> Desc: {desc_str[:30]}"),  #if its too long we cut it
+            OutgoingMessage(sender, f"-> Created: {created_str}"),
+            OutgoingMessage(sender, f"-> Total Msgs: {msg_count}"),
+            OutgoingMessage(sender, f"-> Last Active: {active_str}")
+        ]

@@ -146,3 +146,14 @@ class StorageSQLite:
                                 ORDER BY received_at DESC, id DESC LIMIT ?;
                                 """, (room_name, n))
         return cur.fetchall()
+
+    def get_room_info(self, name: str):
+        """Returns description, creation date, message count, and last message date."""
+        cur = self.conn.execute("""
+                                SELECT r.description, r.created_at, COUNT(m.id), MAX(m.received_at)
+                                FROM rooms r
+                                         LEFT JOIN messages m ON r.name = m.room_name
+                                WHERE r.name = ?
+                                GROUP BY r.name;
+                                """, (name,))
+        return cur.fetchone()
