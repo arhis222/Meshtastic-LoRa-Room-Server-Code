@@ -59,7 +59,8 @@ class RoomManager:
         if action == "read":
             return self._handle_read(sender, tokens)
 
-        return [OutgoingMessage(sender, f"ERR unknown action '{action}' (try /room help)")]
+        #return [OutgoingMessage(sender, f"ERR unknown action '{action}' (try /room help)")]
+        return [OutgoingMessage(None, f"ERR unknown action '{action}' (try /room help)")]
 
     # --- Private Management Methods ---
 
