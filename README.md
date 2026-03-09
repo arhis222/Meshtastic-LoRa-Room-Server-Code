@@ -171,15 +171,16 @@ python3 client.py
 
 ## Client Commands (Via LoRa)
 
-Send these messages from your Meshtastic mobile app to the Node ID of the server:
+Send these commands from your Meshtastic mobile app (or client interface) directly to the **Room Server** node (via Direct Message / DM) to interact with the database:
 
-* `/room create <room_name>` - Create a new chat room.
-* `/room list` - List all available chat rooms.
-* `/room join <room_name>` - Join a specific chat room.
-* `/room leave` - Leave the current chat room.
-* `/msg <message>` - Send a message to the current room.
-* `/help` - Display help information.
-* ...
+* `/room create  <name> [description]` - Create a new chat room (description is optional).
+* `/room post <name> <message>` - Publish a message to a specific room.
+* `/room read <name> [n]` - Read the last `n` messages from a room (default is 5, max is 10 messages).
+* `/room list` - View a paginated list of all available chat rooms on the server.
+* `/room delete <name>` - Delete a specific chat room from the database.
+* `/room help` (or `/room ?`) - Display the list of available commands.
+
+> **💡 Note on Architecture:** > Unlike traditional chat servers, this LoRa Room Server is *stateless*. There are no `/room join` or `/room leave` commands. You do not need to "enter" a room to participate; you simply target the room name using the `post` and `read` commands. This drastically reduces unnecessary network traffic and saves valuable LoRa airtime!</name></name></message></name></name>
 
 ---
 
