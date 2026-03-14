@@ -94,3 +94,15 @@ meshtastic --set-owner "Room Server" --set-owner-short "SRV"
 * **Taille des Messages (Chunking à 32 caractères) :** Bien que la charge utile (payload) maximale théorique d'un paquet Meshtastic soit d'environ 200 octets, nous avons conçu le serveur pour découper systématiquement les messages longs en blocs de **32 caractères maximum**. Ce choix technique répond à deux enjeux majeurs :
   1. *Réduction du "Time-on-Air" et des pertes :* Des paquets très courts minimisent le temps d'émission radio. Cela réduit drastiquement le risque de collisions en vol et de pertes de paquets (Packet Loss), rendant notre système beaucoup plus robuste.
   2. *Expérience Utilisateur (UX) optimisée :* La limite de 32 caractères correspond à la largeur de lecture idéale pour les petits écrans matériels (ex: écrans OLED des modules Heltec) et les terminaux mobiles, garantissant un affichage propre sans coupure arbitraire des mots au milieu d'une phrase.
+
+## 6. Protection Anti-Spam (Rate Limiting)
+
+* **Protection contre le Spam :** Afin d'éviter la saturation du réseau LoRa et les abus potentiels, le serveur implémente un mécanisme de **cooldown par utilisateur**. Chaque nœud doit attendre **10 secondes** entre deux commandes `/room`.
+
+* **Gestion du Débit Réseau :** Cette limitation empêche l'envoi de commandes en rafale qui pourraient monopoliser l'antenne et perturber les communications des autres utilisateurs sur le réseau Meshtastic.
+
+* **Retour Utilisateur (Feedback) :** Si un utilisateur tente d'envoyer une commande avant la fin du délai, le serveur rejette la requête et renvoie un message d'erreur indiquant le temps restant avant la prochaine commande autorisée.
+
+Exemple de réponse :
+
+Ce mécanisme contribue à maintenir **la stabilité et la fiabilité du serveur** dans un environnement radio contraint comme LoRa.
