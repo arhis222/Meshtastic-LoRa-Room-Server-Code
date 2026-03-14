@@ -41,7 +41,14 @@ class TransportHardware:
             # Broadcast
             if target is None:
                 log.info(f"📡 [TX Hardware Broadcast] {text}")
-                self.interface.sendText(text)
+                #self.interface.sendText(text)
+                target_ch_index = 0 # default channel is 0
+                if self.interface.localNode and self.interface.localNode.channels: # we try to find the channel index for "S8_Project" for broadcast if it exists, otherwise we use the default channel 0
+                    for ch in self.interface.localNode.channels:
+                        if ch.settings.name == "S8_Project":
+                            target_ch_index = ch.index
+                            break
+                self.interface.sendText(text, channelIndex=target_ch_index)
                 return
 
             # DM only works reliably with nodeId strings like '!a1b2c3d4'
@@ -93,6 +100,7 @@ class TransportHardware:
                     # sender to receive the response before we send another one (especially important if there are
                     # multiple responses to the same message, like in /room list)
                     def send_responses_task():
+                        time.sleep(1) # Wait a bit before sending the first response to give the sender some time to receive the original message and to avoid sending responses too quickly in case of multiple responses (e.g., /room list)
                         for resp in responses:
                             self.send(resp)
                             time.sleep(4)
