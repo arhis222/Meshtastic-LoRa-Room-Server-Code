@@ -76,6 +76,8 @@ def main():
         print("  /room read <name>            -> Read messages")
         print("  /room delete <name>          -> Delete a room")
         print("  /room help                  -> Show this help")
+        print("  /room info <name>          -> Show info about a room")
+        print("  /room announce <message>  -> Announce a message to all members (broadcast)")
         print("--------------------------------------------------")
         print("(Press Ctrl+C to quit)\n")
 

@@ -230,6 +230,7 @@ class RoomManager:
             "/room post <name> <msg>",
             "/room read <name> [n]",
             "/room info <name>",
+            "/room announce <msg>",
             "/room help or /room ?"
         ]
 
