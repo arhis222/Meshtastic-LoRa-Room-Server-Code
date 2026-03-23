@@ -3,6 +3,7 @@ from pubsub import pub
 import time
 import sys
 
+MAX_SAFE_COMMAND_LEN = 35
 
 # Dependency installation if not already done:
 # pip install meshtastic pubsub
@@ -83,13 +84,19 @@ def main():
 
         # Main loop to read user input and send messages to the server
         while True:
-            msg = input("> ")
-            if msg.strip():
+            msg = input("> ").strip()
+            if msg:
+                # LORA PAYLOAD LIMIT CHECK
+                # Based on experimental testing and CLI 'lora.use_preset' confirmation:
+                # EU868 MTU (51 bytes) - Meshtastic Overhead (16 bytes) = 35 chars net payload.
+                if len(msg) > MAX_SAFE_COMMAND_LEN:
+
+                    print(f"⚠️ Hardware limit reached (35 chars max for EU868 LongSlow).")
+                    print("Due to LoRa hardware limitations, please keep it under 35 characters.")
+                    continue  # Skip the rest of the loop and don't send the message
                 # Sending message via LoRa
-                timestamp = time.strftime(
-                    "%H:%M:%S")  # Add timestamp to the sent message for better readability in the console
-                interface.sendText(
-                    msg)  # Send the raw command to the server, which will parse it and execute the corresponding action
+                timestamp = time.strftime("%H:%M:%S")  # Add timestamp to the sent message
+                interface.sendText(msg)  # Send the raw command to the server
                 print(f"👤 [{timestamp}] YOU ▶ {msg}")
 
     # Handle potential errors when connecting to the serial port (e.g., device not found, permission issues)
