@@ -1,7 +1,9 @@
 import os
 import threading
 import time
+import queue
 import meshtastic.serial_interface
+
 from pubsub import pub
 from parser import IncomingMessage, OutgoingMessage
 from room_manager import RoomManager
@@ -18,6 +20,38 @@ class TransportHardware:
         self.interface = None  # Will hold the Meshtastic SerialInterface instance once connected
         self.dev_path = dev_path
         self.manager = None  # Will be attached via run()
+        self.tx_queue = queue.Queue()  # The FIFO queue for outgoing messages
+        # start a dedicated worker thread to process the queue
+        self.tx_thread = threading.Thread(target=self._tx_worker, daemon=True)
+        self.tx_thread.start()
+
+    def _tx_worker(self):
+        """
+        Background worker thread that processes the FIFO queue continuously.
+        It takes one message at a time and applies delays to prevent radio collisions.
+        """
+        while True:
+            # This will block and wait until an item is available in the queue
+            out_msg = self.tx_queue.get()
+
+            try:
+                # Wait until the hardware interface is available
+                while self.interface is None:
+                    log.warning("⚠️ Waiting for hardware interface before sending queued message...")
+                    time.sleep(1)
+
+                # Small delay before sending
+                time.sleep(1)
+                self.send(out_msg)
+
+                # Delay between consecutive transmissions
+                time.sleep(4)
+
+            except Exception as e:
+                log.error(f"❌ Error in TX background worker: {e}")
+            finally:
+                # Mark the task as finished so the queue can proceed
+                self.tx_queue.task_done()
 
     def send(self, out: OutgoingMessage) -> None:
         """
@@ -61,7 +95,15 @@ class TransportHardware:
             # Fallback: unknown/unsupported target format (e.g., int nodeNum)
             log.warning(f"⚠️ target_id format not supported ({target!r}). Fallback to broadcast.")
             log.info(f"📡 [TX Hardware Broadcast] {text}")
-            self.interface.sendText(text)
+
+            target_ch_index = 0
+            if self.interface.localNode and self.interface.localNode.channels:
+                for ch in self.interface.localNode.channels:
+                    if ch.settings.name == "S8_Project":
+                        target_ch_index = ch.index
+                        break
+
+            self.interface.sendText(text, channelIndex=target_ch_index)
 
         # Catch any exceptions from the Meshtastic library (e.g., if the device is disconnected while sending) and log them without crashing the server
         except Exception as e:
@@ -91,22 +133,15 @@ class TransportHardware:
                     ts=time.time()
                 )
 
-                if self.manager:  # Only process the message if the manager is attached (via run()), otherwise we might receive messages before we're fully ready
-                    responses = self.manager.handle_message(
-                        msg)  # Get responses from the manager (RoomManager) based on the incoming message
+                if self.manager:  # Only process the message if the manager is attached
+                    responses = self.manager.handle_message(msg)
 
-                    # create a separate thread to send responses with delay, so we don't block the main thread
-                    # Send each response with a delay to avoid flooding the network and to give some time for the
-                    # sender to receive the response before we send another one (especially important if there are
-                    # multiple responses to the same message, like in /room list)
-                    def send_responses_task():
-                        time.sleep(1) # Wait a bit before sending the first response to give the sender some time to receive the original message and to avoid sending responses too quickly in case of multiple responses (e.g., /room list)
-                        for resp in responses:
-                            self.send(resp)
-                            time.sleep(4)
-
-                    threading.Thread(target=send_responses_task,
-                                     daemon=True).start()  # Start the thread as a daemon so it doesn't block the program from exiting if we need to shut down
+                    # Push to FIFO Queue
+                    # Instead of spawning a new thread for every received message,
+                    # we safely push all generated responses into our FIFO queue.
+                    # The _tx_worker thread will pick them up one by one.
+                    for resp in responses:
+                        self.tx_queue.put(resp)
 
         except Exception as e:  # Catch any exceptions that occur during the processing of the received packet to prevent crashes and to log the error for debugging purposes
             log.error(f"Error processing packet: {e}")
