@@ -312,6 +312,8 @@ or send messages on the network.
 
 ## Architecture
 
+The source code is organized into several modules located in the `Src/` directory.
+Each module has a well-defined responsibility in the overall architecture.
 Here is the technical description of each Python module composing the **Room Server LoRa** project:
 
 
@@ -320,12 +322,12 @@ Here is the technical description of each Python module composing the **Room Ser
 | **`main.py`**               | **Entry Point (Orchestrator)**       | This is the file executed to start the server. It initializes the database, the`RoomManager`, and connects the hardware.                                                                             |
 | **`database.py`**           | **Data Management (Storage)**        | Manages the **SQLite** connection. It creates the tables (`rooms`, `messages`) and contains functions to insert or read data (CRUD).                                                                 |
 | **`room_manager.py`**       | **Business Logic (Brain)**           | **Central module** of the server. It processes incoming commands, manages rooms, applies anti-spam protection, formats long replies, and coordinates all interactions with the SQLite storage layer. |
-| **`parser.py`**             | **Syntax Parser (Translator)**       | Analyzes the received text. It detects if the message starts with`/` (e.g., `/room create`) and separates the action from the arguments.                                                             |
+| **`parser.py`**             | **Syntax Parser (Translator)**       | Parses `/room` commands, extracts tokens, and helps the server distinguish actions and arguments before execution.                                                     |
 | **`meshtastic_comm_hw.py`** | **Hardware Interface (Real Driver)** | This is the Wio-E5 "driver". It listens to the USB port (`/dev/ttyUSB0`), captures incoming LoRa signals, and sends responses.                                                                       |
 | **`meshtastic_comm.py`**    | **Simulation Interface (Mock)**      | Simulates the LoRa interface via the console. Allows testing the entire server logic without connected hardware, using the keyboard as input and screen as output.                                   |
 | **`client.py`**             | **Client Simulator (Tester)**        | The script used on the test computer. It allows sending messages to the server via a second LoRa module, simulating a real user.                                                                     |
 | **`reset_db.py`**           | **Maintenance Tool (Cleaner)**       | A small utility script to cleanly delete the`.db` file and reset the database to zero in case of problems.                                                                                           |
-| **`logger.py`**             | **Logging (Tracker)**                | (Integrated into other files) Used to display colored messages in the terminal (`INFO`, `ERROR`, `DEBUG`) to facilitate debugging.                                                                   |
+| **`logger.py`**             | **Logging (Tracker)**                | Provides logging support across the application for debugging, monitoring, warnings, and error tracking.                                               |
 
 
 ## Console UX & Emoji-Based Feedback
@@ -381,7 +383,8 @@ log.info(f"📩 [RX Hardware] From {sender_id}: {text}")
 * Arhan UNAY
 * Adam TAWFIK
 
-## For the detailed documentation and flyers, please visit:
+## Documents Repository
+For the final report, poster, flyer, presentations, and additional documentation, please visit:
 
 https://github.com/arhis222/Meshtastic-LoRa-Room-Server-Documents
 
