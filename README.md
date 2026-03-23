@@ -287,5 +287,5 @@ log.info(f"📩 [RX Hardware] From {sender_id}: {text}")
 * Arhan UNAY
 * Adam TAWFIK
 
-## For the detailed documentation and lab reports, please visit:
+## For the detailed documentation and flyers, please visit:
 https://github.com/arhis222/Meshtastic-LoRa-Room-Server-Documents
