@@ -13,7 +13,6 @@ Polytech Grenoble – INFO4 – 2025-2026
 <p align="center">
   <img src="images/Logo_polytech.png" width="120">
   &nbsp;&nbsp;&nbsp;
-  <img src="images/inp.png" width="120">
 </p>
 
 ---
