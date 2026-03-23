@@ -90,7 +90,7 @@ including the main development phases and deliverables.
 ## Hardware Requirements
 
 * 1x Raspberry Pi (Zero 2 W, 3, or 4).
-* 2x Meshtastic LoRa Module (Heltec V3, T-Beam, or RAK) connected via USB. (2 ou plus pour tester le client)
+* 2x Meshtastic LoRa Module (Heltec V3, T-Beam, or RAK) connected via USB (2 or more for client testing).
 * (Optional) A second Meshtastic device for client testing.
 
 ---
@@ -117,8 +117,8 @@ pip3 install meshtastic
 ### 3. Clone the Repository
 
 ```bash
-git clone [https://github.com/arhis222/Meshtastic-LoRa-Room-Server-Code.git]
-cd [YOUR_REPO_NAME]
+git clone https://github.com/arhis222/Meshtastic-LoRa-Room-Server-Code.git
+cd Meshtastic-LoRa-Room-Server-Code
 ```
 
 ---
@@ -216,7 +216,7 @@ sudo systemctl stop roomserver.service
 
 ---
 
-## Usage manuel
+## Manual Usage
 
 ### For the Server
 
@@ -243,70 +243,90 @@ python3 client.py
 
 ---
 
-## Commandes Disponibles
+## Available Commands
 
-Pour interagir avec le serveur, envoyez ces commandes par **Message Direct (DM)** au nœud "Room Server" depuis votre application mobile Meshtastic :
+To interact with the server, send these commands via Direct Message (DM) to the node "Room Server".
 
-### 🏠 Gestion des Salons (Rooms)
+### 🏠 Room Management
 
-* **/room create <nom> [description]** : Crée un nouveau salon (la description est optionnelle).
-* **/room list** : Affiche la liste paginée de tous les salons disponibles sur le serveur.
-* **/room info <nom>** : Affiche les métadonnées d'un salon (Description, Date de création, Nombre total de messages, Dernière activité).
-* **/room delete <nom>** : Supprime un salon spécifique de la base de données SQLite.
+* **/room create <name> [description]** : Creates a new room (description is optional).
+* **/room list** : Displays the paginated list of all available rooms on the server.
+* **/room info <name>** : Shows room metadata (description, creation date, total messages, last activity).
+* **/room delete <name>** : Deletes a specific room from the SQLite database.
 
-### 💬 Messagerie et Lecture
+### 💬 Messaging and Reading
 
-* **/room post <nom> <message>** : Publie un message dans un salon spécifique.
-* **/room read <nom> [n]** : Lit les `n` derniers messages d'un salon (par défaut n=5, max n=10).
+* **/room post <name> <message>** : Sends a message to a specific room.
+* **/room read <name> [n]** : Reads the last `n` messages from a room (default = 5, max = 10).
 
-### 📢 Interactions Globales
+### 📢 Global Interactions
 
-* **/room announce <message>** : Diffuse (**Broadcast**) un message à **TOUS** les utilisateurs du canal `S8_Project`.
-* **/room help** (ou **/room ?**) : Affiche la liste des commandes et l'aide à l'utilisation.
-
----
-
-## Optimisations et Robustesse (Architecture)
-
-Pour garantir la fiabilité du système face aux contraintes du réseau LoRa, nous avons implémenté plusieurs mécanismes avancés :
-
-### 1. Protection Anti-Spam (Rate Limiting)
-
-Pour respecter la réglementation sur le temps d'occupation des fréquences (**Duty Cycle**) et protéger la bande passante, un délai de **10 secondes** est imposé entre chaque commande par utilisateur. Si un utilisateur envoie des requêtes trop rapidement, le serveur ignore la commande et demande de patienter.
-
-### 2. Gestion des Files d'Attente (FIFO Queue)
-
-Le matériel LoRa étant **Half-Duplex** (ne peut pas émettre et recevoir simultanément), nous avons implémenté une file d'attente **FIFO** (First-In-First-Out) pour les messages sortants. Cela garantit que les réponses ne s'entrecroisent pas et que chaque paquet est envoyé après un délai de repos du matériel.
-
-### 3. Découpage des Messages (Chunking)
-
-En raison de la limite de charge utile (payload) de ~200 octets du protocole Meshtastic, le serveur découpe automatiquement les réponses longues en blocs de **32 caractères**. Chaque bloc est envoyé avec un délai de 4 secondes pour assurer une réception sans perte.
-
-### 4. Architecture Stateless
-
-Le serveur est conçu pour être "sans état" : il n'est pas nécessaire de rejoindre (`join`) ou de quitter (`leave`) un salon. L'utilisateur interagit directement via les commandes `post` et `read`, ce qui réduit considérablement le trafic réseau inutile.
+* **/room announce <message>** : Broadcasts a message to **ALL** users on the `S8_Project` channel.
+* **/room help** (or **/room ?**) : Displays the list of available commands.
 
 ---
 
-## Sécurité
+## Network Optimizations and Robustness
 
-Le canal `S8_Project` est protégé par un chiffrement **AES-128/256**. La présence du **cadenas vert** sur l'interface client garantit que seules les personnes possédant la clé PSK (Pre-Shared Key) peuvent lire ou envoyer des messages sur le réseau.
-EOF
+To ensure reliable operation under LoRa network constraints, several mechanisms were implemented.
 
-echo "✅ README.md a été créé avec succès !"
+### 1. Anti-Spam Protection (Rate Limiting)
 
-> **💡 Note on Architecture:** > Unlike traditional chat servers, this LoRa Room Server is *stateless*. There are no `/room join` or `/room leave` commands. You do not need to "enter" a room to participate; you simply target the room name using the `post` and `read` commands. This drastically reduces unnecessary network traffic and saves valuable LoRa airtime!</name></name></message></name></name>
+To respect LoRa duty cycle limitations and protect bandwidth, a **10-second cooldown**
+is applied per user.  
+If a user sends commands too quickly, the server rejects the request and asks the user to wait.
+
+### 2. FIFO Queue for Radio Transmission
+
+LoRa hardware is **half-duplex** (cannot transmit and receive at the same time).  
+A **FIFO queue (First-In-First-Out)** is used for outgoing messages to prevent collisions
+and ensure packets are sent sequentially.
+
+### 3. Message Chunking
+
+Because Meshtastic payload size is limited (~200 bytes),
+long responses are automatically split into **32-character chunks**.
+
+Each chunk is sent with a short delay to reduce packet loss
+and keep the network stable.
+
+### 4. Stateless Architecture
+
+The server is designed to be **stateless**.
+
+There are no `/room join` or `/room leave` commands.
+Users directly send commands using the room name.
+
+This greatly reduces unnecessary traffic and saves LoRa airtime.
+
+---
+
+## Security
+
+The `S8_Project` channel is protected using **AES encryption**.
+
+Only users with the correct **PSK (Pre-Shared Key)** can read
+or send messages on the network.
 
 ---
 
 ## Architecture
 
-The Room Server consists of the following components:
+Here is the technical description of each Python module composing the **Room Server LoRa** project:
 
-* main.py: Entry point that initializes the server.
-* ...
 
----
+| File / Module               | Main Role                            | Technical Description                                                                                                                                                                                |
+| :-------------------------- | :----------------------------------- |:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **`main.py`**               | **Entry Point (Orchestrator)**       | This is the file executed to start the server. It initializes the database, the`RoomManager`, and connects the hardware.                                                                             |
+| **`database.py`**           | **Data Management (Storage)**        | Manages the **SQLite** connection. It creates the tables (`rooms`, `messages`) and contains functions to insert or read data (CRUD).                                                                 |
+| **`room_manager.py`**       | **Business Logic (Brain)**           | **Central module** of the server. It processes incoming commands, manages rooms, applies anti-spam protection, formats long replies, and coordinates all interactions with the SQLite storage layer. |
+| **`parser.py`**             | **Syntax Parser (Translator)**       | Analyzes the received text. It detects if the message starts with`/` (e.g., `/room create`) and separates the action from the arguments.                                                             |
+| **`meshtastic_comm_hw.py`** | **Hardware Interface (Real Driver)** | This is the Wio-E5 "driver". It listens to the USB port (`/dev/ttyUSB0`), captures incoming LoRa signals, and sends responses.                                                                       |
+| **`meshtastic_comm.py`**    | **Simulation Interface (Mock)**      | Simulates the LoRa interface via the console. Allows testing the entire server logic without connected hardware, using the keyboard as input and screen as output.                                   |
+| **`client.py`**             | **Client Simulator (Tester)**        | The script used on the test computer. It allows sending messages to the server via a second LoRa module, simulating a real user.                                                                     |
+| **`reset_db.py`**           | **Maintenance Tool (Cleaner)**       | A small utility script to cleanly delete the`.db` file and reset the database to zero in case of problems.                                                                                           |
+| **`logger.py`**             | **Logging (Tracker)**                | (Integrated into other files) Used to display colored messages in the terminal (`INFO`, `ERROR`, `DEBUG`) to facilitate debugging.                                                                   |
+
 
 ## Console UX & Emoji-Based Feedback
 
