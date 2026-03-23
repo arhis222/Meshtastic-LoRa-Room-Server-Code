@@ -53,7 +53,7 @@ We selected **SQLite** as our storage engine.
 
 ## 3. Sequence Diagram
 
-![Sequence Diagram](images/Diagrams/sequence_diagram.png)
+![Sequence Diagram](../images/Diagrams/sequence_diagram.png)
 
 The following sequence diagram illustrates the complete lifecycle of a `/room post` command,
 from the user smartphone to the LoRa network, then to the Room Server,
