@@ -1,6 +1,25 @@
-# Room Server
+<p align="center">
+  <img src="images/logo1.png" width="180">
+</p>
 
-A Python-based application running on a Raspberry Pi that acts as a central "Room Server" for the Meshtastic LoRa mesh network. It allows users to create channels, join rooms, and store messages persistently.
+<h1 align="center">
+LoRa Room Server — Source Code
+</h1>
+
+<p align="center">
+Polytech Grenoble – INFO4 – 2025-2026
+</p>
+
+---
+
+## Description
+
+This repository contains the source code of the **LoRa Room Server** project.
+
+The Room Server is a Python application running on a Raspberry Pi connected to a LoRa / Meshtastic node.
+It extends the Meshtastic mesh network by adding persistent chat rooms, message history, and structured commands.
+
+The server works fully offline and stores all data locally using SQLite.
 
 ---
 
@@ -288,4 +307,10 @@ log.info(f"📩 [RX Hardware] From {sender_id}: {text}")
 * Adam TAWFIK
 
 ## For the detailed documentation and flyers, please visit:
+
 https://github.com/arhis222/Meshtastic-LoRa-Room-Server-Documents
+
+## License
+
+This project is provided for academic purposes.
+
