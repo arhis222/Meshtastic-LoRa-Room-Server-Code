@@ -11,7 +11,7 @@ Polytech Grenoble – INFO4 – 2025-2026
 </p>
 
 <p align="center">
-  <img src="images/Logo_polytech" width="120">
+  <img src="images/Logo_polytech.png" width="120">
   &nbsp;&nbsp;&nbsp;
   <img src="images/inp.png" width="120">
 </p>
@@ -72,7 +72,7 @@ IncomingMessage, and OutgoingMessage.
 
 ### Planning Diagram
 
-![Planning Diagram](images/Diagrams/Planning_diagram.png)
+![Planning Diagram](images/Diagrams/Planning_Diagram.png)
 
 This Gantt chart represents the project schedule,
 including the main development phases and deliverables.
