@@ -62,7 +62,7 @@ pip3 install meshtastic
 ### 3. Clone the Repository
 
 ```bash
-git clone [https://gricad-gitlab.univ-grenoble-alpes.fr/Projets-INFO4/25-26/03]
+git clone [https://github.com/arhis222/Meshtastic-LoRa-Room-Server-Code.git]
 cd [YOUR_REPO_NAME]
 ```
 
