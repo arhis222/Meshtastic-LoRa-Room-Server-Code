@@ -35,7 +35,7 @@ The server works fully offline and stores all data locally using SQLite.
 ## Hardware Requirements
 
 * 1x Raspberry Pi (Zero 2 W, 3, or 4).
-* 1x Meshtastic LoRa Module (Heltec V3, T-Beam, or RAK) connected via USB. (2 ou plus pour tester le client)
+* 2x Meshtastic LoRa Module (Heltec V3, T-Beam, or RAK) connected via USB. (2 ou plus pour tester le client)
 * (Optional) A second Meshtastic device for client testing.
 
 ---
