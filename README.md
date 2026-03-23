@@ -10,6 +10,12 @@ LoRa Room Server — Source Code
 Polytech Grenoble – INFO4 – 2025-2026
 </p>
 
+<p align="center">
+  <img src="images/Logo_polytech" width="120">
+  &nbsp;&nbsp;&nbsp;
+  <img src="images/inp.png" width="120">
+</p>
+
 ---
 
 ## Description
@@ -20,6 +26,56 @@ The Room Server is a Python application running on a Raspberry Pi connected to a
 It extends the Meshtastic mesh network by adding persistent chat rooms, message history, and structured commands.
 
 The server works fully offline and stores all data locally using SQLite.
+
+---
+
+## System Diagrams
+
+### General Architecture
+
+![General Architecture](images/Diagrams/general_architecture_diagram.png)
+
+This diagram shows the global architecture of the LoRa Room Server system,
+including the client node, radio network, server node, Raspberry Pi,
+and the SQLite storage.
+
+---
+
+### Software Architecture
+
+![Software Architecture](images/Diagrams/software_arhitecture_diagram.png)
+
+This diagram describes the internal software modules of the server,
+including RoomManager, Parser, StorageSQLite, and the communication layer.
+
+---
+
+### Sequence Diagram
+
+![Sequence Diagram](images/Diagrams/sequence_diagram.png)
+
+This diagram shows the processing of a command sent by a user,
+from the smartphone to the LoRa network, then to the server,
+and back to the client after database processing.
+
+---
+
+### Class Diagram
+
+![Class Diagram](images/Diagrams/class_diagram.png)
+
+This UML class diagram represents the main classes of the application,
+including RoomManager, StorageSQLite, CommandParser,
+IncomingMessage, and OutgoingMessage.
+
+---
+
+### Planning Diagram
+
+![Planning Diagram](images/Diagrams/Planning_diagram.png)
+
+This Gantt chart represents the project schedule,
+including the main development phases and deliverables.
 
 ---
 
