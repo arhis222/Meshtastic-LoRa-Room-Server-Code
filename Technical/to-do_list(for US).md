@@ -57,7 +57,7 @@ python3 reset_db.py
 
 # Restart service
 
-sudo systemctl start roomserver
+sudo systemctl restart roomserver
 
 ## Update RaspberryPi
 
