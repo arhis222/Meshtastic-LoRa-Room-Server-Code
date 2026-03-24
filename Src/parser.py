@@ -7,7 +7,7 @@ from typing import List, Optional
 @dataclass
 class IncomingMessage:
     """Represents a message received from the LoRa network."""
-    sender_id: int
+    sender_id: str
     text: str
     ts: float  # Unix Timestamp
 
@@ -15,7 +15,7 @@ class IncomingMessage:
 @dataclass
 class OutgoingMessage:
     """Represents a message to be sent to the LoRa network."""
-    target_id: Optional[int]  # None = Broadcast
+    target_id: Optional[str]  # None = Broadcast
     text: str
 
 

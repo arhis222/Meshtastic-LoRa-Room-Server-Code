@@ -91,7 +91,7 @@ class RoomManager:
 
     # --- Private Management Methods ---
 
-    def _handle_create(self, sender: int, tokens: List[str]) -> List[OutgoingMessage]:
+    def _handle_create(self, sender: str, tokens: List[str]) -> List[OutgoingMessage]:
         if len(tokens) < 3:  # We need at least 3 tokens like : /room create <name>
             return [OutgoingMessage(sender, "ERR usage: /room create <name> [desc]")]
         name = tokens[2]
@@ -101,7 +101,7 @@ class RoomManager:
                                       desc)  # the create_room method should return True if the room was successfully created, or False if a room with the same name already exists (or if there was an error during creation)
         return [OutgoingMessage(sender, f"OK room '{name}' created" if ok else f"ERR room '{name}' exists")]
 
-    def _handle_delete(self, sender: int, tokens: List[str]) -> List[OutgoingMessage]:
+    def _handle_delete(self, sender: str, tokens: List[str]) -> List[OutgoingMessage]:
         if len(tokens) != 3:
             return [OutgoingMessage(sender, "ERR usage: /room delete <name>")]
         name = tokens[2]
@@ -109,7 +109,7 @@ class RoomManager:
             name)  # The delete_room method should return True if the room was successfully deleted, or False if the room was not found
         return [OutgoingMessage(sender, f"OK room '{name}' deleted" if ok else f"ERR room '{name}' not found")]
 
-    def _handle_list(self, sender: int) -> List[OutgoingMessage]:
+    def _handle_list(self, sender: str) -> List[OutgoingMessage]:
         rooms = self.storage.list_rooms()  # The list_rooms method should return a list of tuples, where each tuple contains the name and description of a room. If there are no rooms, it should return an empty list.
         if not rooms:
             return [OutgoingMessage(sender, "Rooms: (none)")]
@@ -144,7 +144,7 @@ class RoomManager:
 
     # Previous version of _handle_post, which was based on splitting tokens, but it had issues with messages that contained multiple words (e.g., "/room post TestRoom Hello everyone, how are you?"), because it would split the message into multiple tokens and we would lose the original message structure. The new version _handle_post_from_raw takes the raw text of the command and splits it into a maximum of 4 parts: the command itself, the action, the room name, and the rest of the message as a single string, which allows us to preserve the full message content even if it contains spaces.
     """
-    def _handle_post(self, sender: int, ts: float, tokens: List[str]) -> List[OutgoingMessage]:
+    def _handle_post(self, sender: str, ts: float, tokens: List[str]) -> List[OutgoingMessage]:
         If len(tokens) < 4: #  We need at least 4 tokens: /room post <name> <msg>, and the message can contain multiple words
             return [OutgoingMessage(sender, "ERR usage: /room post <name> <msg>")]
         name = tokens[2]
@@ -155,7 +155,7 @@ class RoomManager:
         return [OutgoingMessage(sender, f"OK posted to '{name}'")]
     """
 
-    def _handle_post_from_raw(self, sender: int, ts: float, raw_text: str) -> List[OutgoingMessage]:
+    def _handle_post_from_raw(self, sender: str, ts: float, raw_text: str) -> List[OutgoingMessage]:
         # Exemple: "/room post TestRoom bonjour tout le monde"
         parts = raw_text.strip().split(maxsplit=3)
 
@@ -173,7 +173,7 @@ class RoomManager:
                                  content)  # The add_message method should save the message in the database, associating it with the specified room, sender, and timestamp. We convert the timestamp to an integer (Unix time) for consistency with how we store timestamps in the database.
         return [OutgoingMessage(sender, f"OK posted to '{name}'")]
 
-    def _handle_read(self, sender: int, tokens: List[str]) -> List[OutgoingMessage]:
+    def _handle_read(self, sender: str, tokens: List[str]) -> List[OutgoingMessage]:
         if len(tokens) < 3:  # We need at least 3 tokens: /room read <name>, and optionally a 4th token for the number of messages to read
             return [OutgoingMessage(sender, "ERR usage: /room read <name> [n]")]
 
@@ -224,7 +224,7 @@ class RoomManager:
 
         return responses
 
-    def _help_text(self, OutgoingMessage, sender: int) -> List[OutgoingMessage]:
+    def _help_text(self, OutgoingMessage, sender: str) -> List[OutgoingMessage]:
         """Returns the help menu as a list of smaller messages to respect LoRa payload limits."""
         # Split the help menu into individual lines to avoid the "Data payload too big" error
         help_lines = [
@@ -246,7 +246,7 @@ class RoomManager:
 
         return responses
 
-    def _handle_info(self, sender: int, tokens: List[str]) -> List[OutgoingMessage]:
+    def _handle_info(self, sender: str, tokens: List[str]) -> List[OutgoingMessage]:
         """Provides information about a specific room, such as its description, creation date, total number of messages, and last active date."""
         if len(tokens) < 3:
             return [OutgoingMessage(sender, "ERR usage: /room info <name>")]
@@ -273,7 +273,7 @@ class RoomManager:
             OutgoingMessage(sender, f"-> Last Active: {active_str}")
         ]
 
-    def _handle_announce(self, sender: int, raw_text: str) -> List[OutgoingMessage]:
+    def _handle_announce(self, sender: str, raw_text: str) -> List[OutgoingMessage]:
         """Sends a broadcast message to ALL nodes in the network."""
         parts = raw_text.strip().split(
             maxsplit=2)  # We split the raw text into a maximum of 3 parts: the command itself, the action, and the rest of the message

@@ -58,7 +58,7 @@ class StorageSQLite:
                               NOT
                               NULL,
                               sender_id
-                              INTEGER
+                              TEXT
                               NOT
                               NULL,
                               received_at
@@ -128,7 +128,7 @@ class StorageSQLite:
                                 (name,))  # Limit 1 for efficiency since we only need to know if at least one row exists, and we don't care about the actual data
         return cur.fetchone() is not None  # fetchone() returns None if there are no results, so if it's not None it means the room exists
 
-    def add_message(self, room_name: str, sender_id: int, received_at: int, content: str) -> None:
+    def add_message(self, room_name: str, sender_id: str, received_at: int, content: str) -> None:
         """Saves a message into a specific room."""
         self.conn.execute("BEGIN;")
         self.conn.execute(
@@ -137,7 +137,7 @@ class StorageSQLite:
         )
         self.conn.execute("COMMIT;")
 
-    def read_last_messages(self, room_name: str, n: int) -> List[Tuple[int, int, str]]:
+    def read_last_messages(self, room_name: str, n: int) -> List[Tuple[str, int, str]]:
         """Retrieves the last N messages from a room."""
         cur = self.conn.execute("""
                                 SELECT sender_id, received_at, content
