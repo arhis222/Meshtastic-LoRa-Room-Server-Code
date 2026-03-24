@@ -83,7 +83,8 @@ class RoomManager:
         if action == "announce":
             return self._handle_announce(sender, text)
 
-        return [OutgoingMessage(sender, f"ERR unknown action    (try /room help)")]
+        time.sleep(1) # Small delay before sending the error response to give the user some time to receive the original message and to avoid sending responses too quickly in case of multiple messages (e.g., if they are spamming commands, we don't want to flood them with error messages, but we still want to give feedback about the unknown command)
+        return [OutgoingMessage(sender, f"ERR unknown action (try /room help)")]
 
     # --- Private Management Methods ---
 
