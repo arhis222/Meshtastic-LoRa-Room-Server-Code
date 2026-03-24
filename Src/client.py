@@ -20,7 +20,9 @@ def on_receive(packet, interface):
 
             # Ignore our own messages (Echo cancellation)
             my_id = interface.myInfo.my_node_num
-            if sender == my_id:
+            my_id_str = getattr(interface.myInfo, "my_node_id", None)
+
+            if sender == my_id or sender == my_id_str:
                 return
 
             timestamp = time.strftime("%H:%M:%S")

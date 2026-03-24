@@ -58,7 +58,7 @@ class RoomManager:
         # --- Action Dispatch ---
 
         if action in ("help", "?"):
-            return self._help_text(OutgoingMessage, sender)
+            return self._help_text(sender)
 
         # if action == "hello": # Special command to acknowledge new clients (not stored in DB)
         #    log.info(f"🟢 NEW CLIENT CONNECTED: ID {sender}")
@@ -85,8 +85,6 @@ class RoomManager:
         if action == "announce":
             return self._handle_announce(sender, text)
 
-        time.sleep(
-            1)  # Small delay before sending the error response to give the user some time to receive the original message and to avoid sending responses too quickly in case of multiple messages (e.g., if they are spamming commands, we don't want to flood them with error messages, but we still want to give feedback about the unknown command)
         return [OutgoingMessage(sender, f"ERR unknown action (try /room help)")]
 
     # --- Private Management Methods ---
@@ -224,7 +222,7 @@ class RoomManager:
 
         return responses
 
-    def _help_text(self, OutgoingMessage, sender: str) -> List[OutgoingMessage]:
+    def _help_text(self, sender: str) -> List[OutgoingMessage]:
         """Returns the help menu as a list of smaller messages to respect LoRa payload limits."""
         # Split the help menu into individual lines to avoid the "Data payload too big" error
         help_lines = [
