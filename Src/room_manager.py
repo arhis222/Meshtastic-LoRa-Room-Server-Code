@@ -29,7 +29,8 @@ class RoomManager:
 
         # --- ANTI-SPAM COOLDOWN CHECK ---
         current_time = time.time()
-        last_time = self.user_cooldowns.get(sender, 0) # If the sender is not in the cooldown dictionary, we assume their last message was at time 0 (the epoch),
+        last_time = self.user_cooldowns.get(sender,
+                                            0)  # If the sender is not in the cooldown dictionary, we assume their last message was at time 0 (the epoch),
         # which means they are not currently on cooldown and can send a message.
 
         if current_time - last_time < self.COOLDOWN_SECONDS:
@@ -50,7 +51,8 @@ class RoomManager:
         if len(tokens) < 2:
             return [OutgoingMessage(sender, "ERR usage: /room help")]
 
-        action = tokens[1].lower()  # The action is the second token (e.g., 'create', 'post', etc.) and we convert it to lowercase for case-insensitive matching
+        action = tokens[
+            1].lower()  # The action is the second token (e.g., 'create', 'post', etc.) and we convert it to lowercase for case-insensitive matching
         log.info(f"Action received from {sender}: {action}")
 
         # --- Action Dispatch ---
@@ -83,7 +85,8 @@ class RoomManager:
         if action == "announce":
             return self._handle_announce(sender, text)
 
-        time.sleep(1) # Small delay before sending the error response to give the user some time to receive the original message and to avoid sending responses too quickly in case of multiple messages (e.g., if they are spamming commands, we don't want to flood them with error messages, but we still want to give feedback about the unknown command)
+        time.sleep(
+            1)  # Small delay before sending the error response to give the user some time to receive the original message and to avoid sending responses too quickly in case of multiple messages (e.g., if they are spamming commands, we don't want to flood them with error messages, but we still want to give feedback about the unknown command)
         return [OutgoingMessage(sender, f"ERR unknown action (try /room help)")]
 
     # --- Private Management Methods ---
@@ -122,7 +125,8 @@ class RoomManager:
             truncated = True
 
         total_rooms = len(rooms)  # we calculate the total number of rooms
-        total_pages = (len(names) + PER_PAGE - 1) // PER_PAGE  # we calculate the total number of pages needed to display all the rooms, based on the number of rooms we have (after truncation if needed) and the number of rooms we want to show per page.
+        total_pages = (
+                                  len(names) + PER_PAGE - 1) // PER_PAGE  # we calculate the total number of pages needed to display all the rooms, based on the number of rooms we have (after truncation if needed) and the number of rooms we want to show per page.
 
         responses: List[OutgoingMessage] = []
         responses.append(OutgoingMessage(sender, f"Rooms ({total_rooms} total):"))
@@ -263,7 +267,7 @@ class RoomManager:
         # Format for the LoRa response, splitting into multiple messages if needed to avoid payload limits, and including the room name, description (truncated if too long), creation date, total number of messages, and last active date.
         return [
             OutgoingMessage(sender, f"--- Info: '{name}' ---"),
-            OutgoingMessage(sender, f"-> Desc: {desc_str[:30]}"),  #if its too long we cut it
+            OutgoingMessage(sender, f"-> Desc: {desc_str[:30]}"),  # if its too long we cut it
             OutgoingMessage(sender, f"-> Created: {created_str}"),
             OutgoingMessage(sender, f"-> Total Msgs: {msg_count}"),
             OutgoingMessage(sender, f"-> Last Active: {active_str}")
@@ -271,7 +275,8 @@ class RoomManager:
 
     def _handle_announce(self, sender: int, raw_text: str) -> List[OutgoingMessage]:
         """Sends a broadcast message to ALL nodes in the network."""
-        parts = raw_text.strip().split(maxsplit=2) # We split the raw text into a maximum of 3 parts: the command itself, the action, and the rest of the message
+        parts = raw_text.strip().split(
+            maxsplit=2)  # We split the raw text into a maximum of 3 parts: the command itself, the action, and the rest of the message
         # as a single string, which allows us to preserve the full announcement content even if it contains spaces.
 
         if len(parts) < 3:

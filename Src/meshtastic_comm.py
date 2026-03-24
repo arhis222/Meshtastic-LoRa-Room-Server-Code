@@ -13,9 +13,9 @@ class TransportSim:
 
     def send(self, out: OutgoingMessage) -> None:
         """Simulates sending a LoRa packet."""
-        if out.target_id is None: #if target_id is None, it's a broadcast message
+        if out.target_id is None:  # if target_id is None, it's a broadcast message
             print(f"📡 [TX Broadcast] {out.text}")
-        else: # if target_id is not None, it's a direct message to a specific node
+        else:  # if target_id is not None, it's a direct message to a specific node
             print(f"📨 [TX to {out.target_id}] {out.text}")
 
     def run(self, manager: RoomManager) -> None:
@@ -25,7 +25,7 @@ class TransportSim:
         print("Example: 1234: /room create ProjectAlpha")
         print("Quit: Ctrl+C\n")
 
-        while True: # loop to read user input and simulate incoming messages
+        while True:  # loop to read user input and simulate incoming messages
             try:
                 line = input("> ").strip()
                 if not line:
@@ -36,11 +36,12 @@ class TransportSim:
                     print("⚠️ Expected format -> sender_id: message")
                     continue
 
-                left, right = line.split(":", 1) # split only on the first colon to allow colons in the message text
+                left, right = line.split(":", 1)  # split only on the first colon to allow colons in the message text
                 try:
                     sender_id = int(left.strip())
                 except ValueError:
-                    print("⚠️ ID must be an integer.") # for now we'll just require integer IDs in the simulation, even though real Meshtastic nodeIds are strings like '!abcd1234'
+                    print(
+                        "⚠️ ID must be an integer.")  # for now we'll just require integer IDs in the simulation, even though real Meshtastic nodeIds are strings like '!abcd1234'
                     continue
 
                 # Creating the message object

@@ -5,6 +5,7 @@ import sys
 
 MAX_SAFE_COMMAND_LEN = 200
 
+
 # Dependency installation if not already done:
 # pip install meshtastic pubsub
 
@@ -93,7 +94,7 @@ def main():
                 # after accounting for the ~16-byte Meshtastic protocol overhead.
                 # We calculate the UTF-8 byte length instead of the character count,
                 # because special characters (é, ç, ı, à) and emojis consume multiple bytes.
-                payload_bytes = len(msg.encode('utf-8')) # byte lenght of the message
+                payload_bytes = len(msg.encode('utf-8'))  # byte lenght of the message
 
                 if payload_bytes > MAX_SAFE_COMMAND_LEN:
                     print(f"⚠️ ERROR: Message too heavy ({payload_bytes} bytes).")
