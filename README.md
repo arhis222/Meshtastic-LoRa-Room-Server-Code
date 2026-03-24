@@ -216,6 +216,46 @@ sudo systemctl stop roomserver.service
 
 ---
 
+# Hardware Configuration (Meshtastic CLI)
+
+## 1. Server Configuration (Raspberry Pi)
+Connect the Wio-E5 module to the Raspberry Pi via USB and run the following commands to configure it as the dedicated **Room Server**.
+
+```bash
+# 1. Set Modem Preset to SHORT_FAST (Crucial for increasing the MTU payload limit to ~230 chars)
+meshtastic --set lora.modem_preset SHORT_FAST
+
+# 2. Reduce TX Power to 14 dBm (Complies with EU868 indoor testing regulations and prevents signal saturation)
+meshtastic --set lora.tx_power 14
+
+# 3. Set a recognizable display name for Direct Messages UX
+meshtastic --set-owner "Room Server" --set-owner-short "SRV"
+
+# 4. Set device role to ROUTER_CLIENT (Reduces network spam by disabling unnecessary telemetry/battery broadcasts)
+meshtastic --set device.role ROUTER_CLIENT
+```
+
+## 2. Client Configuration (User Node)
+Connect the client Wio-E5 module to your local machine via USB.
+!!! CRITICAL: The client's `modem_preset` must exactly match the server's preset. If one is `LONG_SLOW` and the other is `SHORT_FAST`, the radios will not be able to communicate.
+
+```bash
+# 1. Match the Server's Modem Preset to synchronize the radio modulation
+meshtastic --set lora.modem_preset SHORT_FAST
+
+# 2. Match the TX Power for balanced indoor communication
+meshtastic --set lora.tx_power 14
+
+# 3. Set your personal node name (Replace "Arhan" with your actual name)
+meshtastic --set-owner "Arhan Client" --set-owner-short "ARH"
+```
+# Engineering Note: Overcoming the "35-Character Limit"
+During the testing phase, we observed a strict 35-character limit for messages. This occurs because Meshtastic defaults to the `LONG_SLOW` preset to maximize range, which restricts the LoRa Physical Layer Maximum Transmission Unit (MTU) to just **51 bytes**. After subtracting the 16-byte Meshtastic protocol overhead, users are left with exactly **35 bytes (characters)** for text.
+
+By migrating our infrastructure to the `SHORT_FAST` preset, we traded unnecessary ultra-long-range capability for a significantly higher data rate. This engineering decision increased our usable text payload to over **200 characters**, preventing silent packet drops and significantly improving the user experience for long message transmissions.
+
+---
+
 ## Manual Usage
 
 ### For the Server

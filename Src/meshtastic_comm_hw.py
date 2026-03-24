@@ -136,12 +136,18 @@ class TransportHardware:
                 if self.manager:  # Only process the message if the manager is attached
                     responses = self.manager.handle_message(msg)
 
-                    # Push to FIFO Queue
-                    # Instead of spawning a new thread for every received message,
-                    # we safely push all generated responses into our FIFO queue.
-                    # The _tx_worker thread will pick them up one by one.
-                    for resp in responses:
-                        self.tx_queue.put(resp)
+                    # create a separate thread to send responses with delay, so we don't block the main thread
+                    # Send each response with a delay to avoid flooding the network and to give some time for the
+                    # sender to receive the response before we send another one (especially important if there are
+                    # multiple responses to the same message, like in /room list)
+                    def send_responses_task():
+                        time.sleep(1) # Wait a bit before sending the first response to give the sender some time to receive the original message and to avoid sending responses too quickly in case of multiple responses (e.g., /room list)
+                        for resp in responses:
+                            self.send(resp)
+                            time.sleep(2)
+
+                    threading.Thread(target=send_responses_task,
+                                     daemon=True).start()  # Start the thread as a daemon so it doesn't block the program from exiting if we need to shut down
 
         except Exception as e:  # Catch any exceptions that occur during the processing of the received packet to prevent crashes and to log the error for debugging purposes
             log.error(f"Error processing packet: {e}")

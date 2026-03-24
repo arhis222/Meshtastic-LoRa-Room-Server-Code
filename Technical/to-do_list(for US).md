@@ -57,10 +57,10 @@ python3 reset_db.py
 
 # Restart service
 
-sudo systemctl start roomserver
+sudo systemctl restart roomserver
 
 ## Update RaspberryPi
 
 ssh pi@raspberrypi.local
-cd ~/Desktop/repertoire/ProjetS8/Src
+cd ~/Desktop/repertoire/S8_Project/Code/Src 
 scp *.py pi@raspberrypi.local:/home/pi/room_server/

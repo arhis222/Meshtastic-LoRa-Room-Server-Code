@@ -3,6 +3,7 @@ from pubsub import pub
 import time
 import sys
 
+MAX_SAFE_COMMAND_LEN = 200
 
 # Dependency installation if not already done:
 # pip install meshtastic pubsub
@@ -76,19 +77,39 @@ def main():
         print("  /room read <name>            -> Read messages")
         print("  /room delete <name>          -> Delete a room")
         print("  /room help                  -> Show this help")
+        print("  /room info <name>          -> Show info about a room")
+        print("  /room announce <message>  -> Announce a message to all members (broadcast)")
         print("--------------------------------------------------")
         print("(Press Ctrl+C to quit)\n")
 
         # Main loop to read user input and send messages to the server
         while True:
-            msg = input("> ")
-            if msg.strip():
+            msg = input("> ").strip()
+
+            if msg:
+                # LORA PAYLOAD LIMIT CHECK (BYTE LEVEL)
+                # Based on CLI configuration 'lora.modem_preset: SHORT_FAST':
+                # The physical MTU is increased, allowing a safe net payload of ~200 bytes
+                # after accounting for the ~16-byte Meshtastic protocol overhead.
+                # We calculate the UTF-8 byte length instead of the character count,
+                # because special characters (é, ç, ı, à) and emojis consume multiple bytes.
+                payload_bytes = len(msg.encode('utf-8')) # byte lenght of the message
+
+                if payload_bytes > MAX_SAFE_COMMAND_LEN:
+                    print(f"⚠️ ERROR: Message too heavy ({payload_bytes} bytes).")
+                    print("Due to LoRa hardware limitations, please keep it under 200 bytes.")
+                    print("(Note: Special characters and emojis consume more space!)")
+                    continue  # Skip the rest of the loop and do not send the message
+
                 # Sending message via LoRa
-                timestamp = time.strftime(
-                    "%H:%M:%S")  # Add timestamp to the sent message for better readability in the console
-                interface.sendText(
-                    msg)  # Send the raw command to the server, which will parse it and execute the corresponding action
-                print(f"👤 [{timestamp}] YOU ▶ {msg}")
+                try:
+                    # The timestamp is only for the local display, it is not sent over LoRa
+                    timestamp = time.strftime("%H:%M:%S")
+                    interface.sendText(msg)  # Send the raw text to the server
+                    print(f"👤 [{timestamp}] YOU ▶ {msg}")
+                except Exception as e:
+                    # Catch any hardware or library rejections to prevent a crash
+                    print(f"❌ Transmission Error: Message could not be sent. Details: {e}")
 
     # Handle potential errors when connecting to the serial port (e.g., device not found, permission issues)
     except OSError as e:
