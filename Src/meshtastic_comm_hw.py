@@ -131,7 +131,9 @@ class TransportHardware:
 
                 # Ignore messages from ourselves (Echo)
                 my_id = self.interface.myInfo.my_node_num
-                if sender_id == my_id:
+                my_id_str = getattr(self.interface.myInfo, "my_node_id", None)
+
+                if sender_id == my_id or sender_id == my_id_str:
                     return
 
                 # send the received message to the log for debugging and visibility
@@ -210,6 +212,9 @@ class TransportHardware:
                         pub.unsubscribe(self.on_receive, "meshtastic.receive")
                     except:
                         pass
+                    finally:
+                        #  mark the interface as unavailable for the TX worker
+                        self.interface = None
 
                 log.info("Retrying connection in 10 seconds...")
                 time.sleep(10)
