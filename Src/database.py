@@ -17,7 +17,7 @@ class StorageSQLite:
         # check_same_thread=False is required because Meshtastic runs on a separate thread so this parameter allows sharing the connection across threads.
         # connect to the SQLite database (it will be created if it doesn't exist)
         self.conn = sqlite3.connect(self.db_path, check_same_thread=False,
-                                    isolation_level=None)  # isolation_level=None enables autocommit mode so we dont need to call commit() after every transactions
+                                    isolation_level=None)  # isolation_level=None enables autocommit
         self._configure_db()  # Set PRAGMAs for better performance and crash resilience
         self._init_schema()  # Create tables if they don't exist
         log.info(f"Database connected: {db_path}")
@@ -114,7 +114,7 @@ class StorageSQLite:
         """Deletes an existing room."""
         self.conn.execute("BEGIN;")
         cur = self.conn.execute("DELETE FROM rooms WHERE name = ?;", (name,))
-        deleted = cur.rowcount > 0  # rowcount gives the number of rows affected by the last execute, so if it's > 0 it means a room was actually deleted (if it was 0, it means no room with that name was found)
+        deleted = cur.rowcount > 0
         self.conn.execute("COMMIT;")
         return deleted
 

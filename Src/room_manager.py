@@ -36,9 +36,7 @@ class RoomManager:
         if current_time - last_time < self.COOLDOWN_SECONDS:
             remaining = int(self.COOLDOWN_SECONDS - (current_time - last_time))
             log.warning(f"🛑 RATE LIMIT: {sender} is sending too fast. Dropping message.")
-            # If the user is sending messages too quickly (i.e., within the cooldown period), we return an error message indicating that
-            # they are being rate limited and how many seconds they need to wait before sending another message.
-            # This helps prevent spam and abuse of the system, while also providing feedback to the user about why their message was not processed.
+            # Enforce 10s rate limit to prevent network spam
             return [OutgoingMessage(sender, f"ERR Spam protection! Wait {remaining}s.")]
 
         # If the user is not on cooldown, we update their last message timestamp to the current time, so that we can enforce the cooldown for their next message.
@@ -61,7 +59,7 @@ class RoomManager:
             return self._help_text(sender)
 
         # if action == "hello": # Special command to acknowledge new clients (not stored in DB)
-        #    log.info(f"🟢 NEW CLIENT CONNECTED: ID {sender}")
+        #    log.info(f" NEW CLIENT CONNECTED: ID {sender}")
         #    return [OutgoingMessage(sender, f"Successfully connected to the server! (Your ID: {sender})")]
 
         if action == "create":
@@ -140,19 +138,6 @@ class RoomManager:
 
         return responses
 
-    # Previous version of _handle_post, which was based on splitting tokens, but it had issues with messages that contained multiple words (e.g., "/room post TestRoom Hello everyone, how are you?"), because it would split the message into multiple tokens and we would lose the original message structure. The new version _handle_post_from_raw takes the raw text of the command and splits it into a maximum of 4 parts: the command itself, the action, the room name, and the rest of the message as a single string, which allows us to preserve the full message content even if it contains spaces.
-    """
-    def _handle_post(self, sender: str, ts: float, tokens: List[str]) -> List[OutgoingMessage]:
-        If len(tokens) < 4: #  We need at least 4 tokens: /room post <name> <msg>, and the message can contain multiple words
-            return [OutgoingMessage(sender, "ERR usage: /room post <name> <msg>")]
-        name = tokens[2]
-        content = " ".join(tokens[3:])
-        If not self.storage.room_exists(name): # We should check if the room exists before trying to post a message to it, and return an error if it doesn't exist
-            return [OutgoingMessage(sender, f"ERR room '{name}' not found")]
-        self.storage.add_message(name, sender, int(ts), content) # The add_message method should save the message in the database, associating it with the specified room, sender, and timestamp. We convert the timestamp to an integer (Unix time) for consistency with how we store timestamps in the database.
-        return [OutgoingMessage(sender, f"OK posted to '{name}'")]
-    """
-
     def _handle_post_from_raw(self, sender: str, ts: float, raw_text: str) -> List[OutgoingMessage]:
         # Exemple: "/room post TestRoom bonjour tout le monde"
         parts = raw_text.strip().split(maxsplit=3)
@@ -204,8 +189,7 @@ class RoomManager:
             # To avoid confusion for the user who might expect to see n messages but only sees a few
             responses.append(OutgoingMessage(sender, f"'{name}': (only {len(rows)} messages)"))
 
-        # We display a header with the room name and the number of messages being displayed, and then we display each message with a timestamp, sender ID, and content.
-        # We also wrap long messages into multiple lines for better readability on the LoRa network, which has limited message length.
+        # Format messages and chunk long texts to respect LoRa MTU
         responses.append(OutgoingMessage(sender, f"--- '{name}' Last {len(rows)} Messages ---"))
 
         # For each message, we format the timestamp into a human-readable string (e.g., "2024-06-01 14:30"),  and we create a header line with the timestamp and sender

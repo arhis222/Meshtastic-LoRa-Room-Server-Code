@@ -30,14 +30,7 @@ class TransportHardware:
         self.tx_thread.start()
 
     def _tx_worker(self):
-        """
-        Background worker that sends outgoing messages in strict FIFO order.
-
-        Why this exists:
-        - LoRa hardware is half-duplex
-        - We must avoid concurrent sends from multiple threads
-        - We want one single transmission pipeline for all outgoing responses
-        """
+        """Processes outgoing messages sequentially (FIFO) to avoid half-duplex collisions."""
         while True:
             # Wait until a message is available in the FIFO queue
             out_msg = self.tx_queue.get()
@@ -86,7 +79,6 @@ class TransportHardware:
             # Broadcast
             if target is None:
                 log.info(f"📡 [TX Hardware Broadcast] {text}")
-                # self.interface.sendText(text)
                 target_ch_index = 0  # default channel is 0
                 if self.interface.localNode and self.interface.localNode.channels:  # we try to find the channel index for "S8_Project" for broadcast if it exists, otherwise we use the default channel 0
                     for ch in self.interface.localNode.channels:

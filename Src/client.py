@@ -91,11 +91,8 @@ def main():
 
             if msg:
                 # LORA PAYLOAD LIMIT CHECK (BYTE LEVEL)
-                # Based on CLI configuration 'lora.modem_preset: SHORT_FAST':
-                # The physical MTU is increased, allowing a safe net payload of ~200 bytes
-                # after accounting for the ~16-byte Meshtastic protocol overhead.
-                # We calculate the UTF-8 byte length instead of the character count,
-                # because special characters (é, ç, ı, à) and emojis consume multiple bytes.
+                # Enforce payload limit based on SHORT_FAST MTU (~200 bytes).
+                # UTF-8 encoding is used to account for multi-byte special characters.
                 payload_bytes = len(msg.encode('utf-8'))  # byte lenght of the message
 
                 if payload_bytes > MAX_SAFE_COMMAND_LEN:
