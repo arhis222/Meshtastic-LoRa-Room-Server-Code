@@ -3,6 +3,7 @@ import time
 from typing import List, Tuple
 from logger import log
 
+
 class StorageSQLite:
     """
     Manages data persistence via SQLite.
