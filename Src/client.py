@@ -5,6 +5,7 @@ import sys
 
 MAX_SAFE_COMMAND_LEN = 200
 
+
 # Dependency installation if not already done:
 # pip install meshtastic pubsub
 
@@ -19,7 +20,9 @@ def on_receive(packet, interface):
 
             # Ignore our own messages (Echo cancellation)
             my_id = interface.myInfo.my_node_num
-            if sender == my_id:
+            my_id_str = getattr(interface.myInfo, "my_node_id", None)
+
+            if sender == my_id or sender == my_id_str:
                 return
 
             timestamp = time.strftime("%H:%M:%S")
@@ -93,7 +96,7 @@ def main():
                 # after accounting for the ~16-byte Meshtastic protocol overhead.
                 # We calculate the UTF-8 byte length instead of the character count,
                 # because special characters (é, ç, ı, à) and emojis consume multiple bytes.
-                payload_bytes = len(msg.encode('utf-8')) # byte lenght of the message
+                payload_bytes = len(msg.encode('utf-8'))  # byte lenght of the message
 
                 if payload_bytes > MAX_SAFE_COMMAND_LEN:
                     print(f"⚠️ ERROR: Message too heavy ({payload_bytes} bytes).")
