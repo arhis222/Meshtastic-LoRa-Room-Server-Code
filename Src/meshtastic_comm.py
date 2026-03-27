@@ -6,9 +6,8 @@ from logger import log
 
 class TransportSim:
     """
-    Simulation of the Meshtastic interface (Console).
-    Later, this class will be replaced or inherited by 'TransportHardware'.
-    Which be the real interface with the Meshtastic hardware via USB.
+    Console-based simulation transport used during development.
+    It can later be replaced by TransportHardware for real USB/LoRa communication.
     """
 
     def send(self, out: OutgoingMessage) -> None:
@@ -37,12 +36,8 @@ class TransportSim:
                     continue
 
                 left, right = line.split(":", 1)  # split only on the first colon to allow colons in the message text
-                try:
-                    sender_id = int(left.strip())
-                except ValueError:
-                    print(
-                        "⚠️ ID must be an integer.")  # for now we'll just require integer IDs in the simulation, even though real Meshtastic nodeIds are strings like '!abcd1234'
-                    continue
+
+                sender_id = left.strip()
 
                 # Creating the message object
                 msg = IncomingMessage(
