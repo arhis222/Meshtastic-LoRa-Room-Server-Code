@@ -67,3 +67,12 @@ def test_get_room_info(db):
     assert info[0] == "main room"
     assert info[2] == 1  # Message count
     assert info[3] == 1000  # Last active timestamp
+
+def test_get_room_info_unknown(db):
+    info = db.get_room_info("unknown")
+    assert info is None
+
+def test_read_empty_room(db):
+    db.create_room("general", "main")
+    messages = db.read_last_messages("general", 5)
+    assert messages == []

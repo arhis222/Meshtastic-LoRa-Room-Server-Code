@@ -105,3 +105,24 @@ def test_fifo_strict_ordering(hw):
     assert calls[0][0][0].text == "First"
     assert calls[1][0][0].text == "Second"
     assert calls[2][0][0].text == "Third"
+
+def test_send_fallback_broadcast(hw):
+    msg = OutgoingMessage(target_id="user123", text="Fallback test")
+    hw.send(msg)
+
+    hw.interface.sendText.assert_called_with("Fallback test", channelIndex=0)
+
+def test_on_receive_ignores_non_text_packet(hw):
+    packet = {
+        'fromId': '!user99',
+        'decoded': {}
+    }
+
+    hw.manager = MagicMock()
+    hw.on_receive(packet, hw.interface)
+
+    hw.manager.handle_message.assert_not_called()
+
+def test_enqueue_empty_responses(hw):
+    hw.enqueue_responses([])
+    assert hw.tx_queue.qsize() == 0

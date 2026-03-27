@@ -25,3 +25,9 @@ def test_message_dataclasses():
     out_msg = OutgoingMessage(target_id=None, text="Broadcast")
     assert out_msg.target_id is None
     assert out_msg.text == "Broadcast"
+
+def test_parse_tokens_empty():
+    assert CommandParser.parse_tokens("") == []
+
+def test_is_room_command_invalid():
+    assert CommandParser.is_room_command("/hello world") is False

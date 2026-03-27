@@ -48,3 +48,15 @@ def test_sim_run_loop(mock_input, sim):
 
     # Make sure the manager was called at least once for the valid input
     assert mock_manager.handle_message.called
+
+@patch("builtins.input")
+def test_sim_run_invalid_sender(mock_input, sim):
+    mock_input.side_effect = [
+        ": /room help",
+        KeyboardInterrupt()
+    ]
+
+    mock_manager = MagicMock()
+    sim.run(mock_manager)
+
+    assert not mock_manager.handle_message.called

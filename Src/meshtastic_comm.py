@@ -38,6 +38,9 @@ class TransportSim:
                 left, right = line.split(":", 1)  # split only on the first colon to allow colons in the message text
 
                 sender_id = left.strip()
+                if not sender_id:
+                    print("⚠️ Invalid sender_id.")
+                    continue
 
                 # Creating the message object
                 msg = IncomingMessage(

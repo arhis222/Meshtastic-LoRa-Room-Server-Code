@@ -85,3 +85,33 @@ def test_announce_command(manager):
 def test_unknown_command(manager):
     responses = manager.handle_message(make_msg("!u1", "/room banana"))
     assert any("ERR unknown action" in r.text for r in responses)
+
+def test_delete_room_command(manager):
+    manager.handle_message(make_msg("!u1", "/room create general"))
+    reset_cooldown(manager, "!u1")
+
+    responses = manager.handle_message(make_msg("!u1", "/room delete general"))
+    assert any("OK room 'general' deleted" in r.text for r in responses)
+
+def test_help_command(manager):
+    responses = manager.handle_message(make_msg("!u1", "/room help"))
+    joined_texts = " ".join(r.text for r in responses)
+    assert "/room create" in joined_texts
+    assert "/room post" in joined_texts
+
+def test_post_to_unknown_room(manager):
+    responses = manager.handle_message(make_msg("!u1", "/room post unknown hello"))
+    assert any("ERR room 'unknown' not found" in r.text for r in responses)
+
+def test_read_unknown_room(manager):
+    responses = manager.handle_message(make_msg("!u1", "/room read unknown 5"))
+    assert any("ERR room 'unknown' not found" in r.text for r in responses)
+
+def test_post_long_message_logic(manager):
+    manager.handle_message(make_msg("!u1", "/room create general"))
+    reset_cooldown(manager, "!u1")
+
+    long_text = "a" * 80
+    responses = manager.handle_message(make_msg("!u1", f"/room post general {long_text}"))
+
+    assert any("OK posted" in r.text for r in responses)

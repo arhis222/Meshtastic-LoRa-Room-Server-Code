@@ -7,6 +7,10 @@ LoRa Room Server — Source Code
 </h1>
 
 <p align="center">
+  <img src="https://github.com/arhis222/Meshtastic-LoRa-Room-Server-Code/actions/workflows/pytest.yml/badge.svg" alt="Test Status">
+</p>
+
+<p align="center">
 Polytech Grenoble – INFO4 – 2025-2026
 </p>
 
